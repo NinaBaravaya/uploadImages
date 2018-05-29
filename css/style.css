@@ -1,0 +1,17 @@
+.content{
+    margin: 0 245px 0 240px;
+}
+.error{
+    margin-top:5px;
+    border:1px solid #765858;
+    background:#ffeded !important;
+    color:#7f5354 !important;
+    padding:3px;
+}
+.success{
+    margin-top:5px;
+    border:1px solid #adc092;
+    background:#f0faf1 !important;
+    color:#58715e !important;
+    padding:3px;
+}
