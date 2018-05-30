@@ -40,14 +40,19 @@ session_start();
    <br/>
     <br/>
     <?php
-    if (isset($_SESSION['add_img']['res'])) {
-        echo $_SESSION['add_img']['res'];
-    }
-    if (isset($_SESSION['answer'])) {
-        echo $_SESSION['answer'];
-        unset($_SESSION['answer']);
-    }
-    ?>
+    if (isset($_SESSION['add_img']['res'])):?>
+        <div class='error'><?php echo $_SESSION['add_img']['res'];?></div>
+    <?php endif;?>
+
+    <?php
+    if (isset($_SESSION['answer']['error'])):?>
+        <div class='error'><?php echo $_SESSION['answer']['error']; unset($_SESSION['answer']['error'])?></div>
+    <?php endif;?>
+
+    <?php
+    if (isset($_SESSION['answer']['success'])):?>
+        <div class='success'><?php echo $_SESSION['answer']['success']; unset($_SESSION['answer']['success'])?></div>
+    <?php endif;?>
     <form action="" method="post" enctype="multipart/form-data">
         <table class="add_edit_page" cellspacing="0" cellpadding="0">
             <tr>

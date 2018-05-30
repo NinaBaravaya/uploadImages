@@ -2,10 +2,10 @@
 try {
     $dbh = new PDO('mysql:host=localhost', 'root', '');
     $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $sql = "CREATE DATABASE IF NOT EXISTS uploadImg";
+    $sql = "CREATE DATABASE IF NOT EXISTS creasept";
     $dbh->exec($sql);
 
-    $dbh = new PDO('mysql:host=localhost;dbname=uploadImg', 'root', '');
+    $dbh = new PDO('mysql:host=localhost;dbname=creasept', 'root', '');
     $sql = "CREATE TABLE IF NOT EXISTS `images` (
       `img_id` int(10) UNSIGNED NOT NULL,
       `name` varchar(255) NOT NULL,
@@ -24,7 +24,7 @@ try {
   MODIFY `img_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT";
     $dbh->exec($sql);
 
-
+    $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $dbh->exec("set names utf8");
 } catch (PDOException $e) {
     print "Error!: " . $e->getMessage() . "<br/>";

@@ -15,20 +15,24 @@ function images()
 }
 /*====изображения - получение массива===*/
 
+function clear($input){
+    return htmlspecialchars(strip_tags(trim($input)));
+}
+
 /* ===Добавление изображения/-ий=== */
 function add_img(){
     if ($_POST['name'][0]) {
         $name = [];
         foreach ($_POST['name'] as $key => $value) {
-            if (empty(trim($value))) {
-                $_SESSION['add_img']['res'] = "<div class='error'>У изображения должно быть название</div>";
+            if (empty(clear($value))) {
+                $_SESSION['add_img']['res'] = "У изображения должно быть название";
                 return false;
             } else {
-                $name[$key] = trim($value);
+                $name[$key] = clear($value);
             }
         }
     } else {
-        $_SESSION['add_img']['res'] = "<div class='error'>У изображения должно быть название</div>";
+        $_SESSION['add_img']['res'] = "У изображения должно быть название";
         return false;
     }
     /////////картинка////////
@@ -36,7 +40,7 @@ function add_img(){
     $types = array("image/gif", "image/png", "image/jpeg", "image/pjpeg", "image/x-png"); // массив допустимых расширений
     for ($i = 0; $i < count($_FILES['galleryimg']['name']); $i++) {
         if (empty($_FILES['galleryimg']['name'][$i])) {
-            $_SESSION['add_img']['res'] = "<div class='error'>Загрузите файл изображения</div>";
+            $_SESSION['add_img']['res'] = "Загрузите файл изображения";
             return false;
         }
         $error = "";
@@ -51,19 +55,19 @@ function add_img(){
 
             if (!in_array($galleryimgType, $types)) {
                 $error .= "Допустимые расширения - .gif, .jpg, .png <br />";
-                $_SESSION['answer'] .= "<div class='error'>Ошибка при загрузке картинки {$_FILES['galleryimg']['name'][$i]} <br /> {$error}</div>";
+                $_SESSION['answer']['error'] .= "Ошибка при загрузке картинки {$_FILES['galleryimg']['name'][$i]} <br /> {$error}";
                 continue;
             }
 
             if ($galleryimgSize > SIZE) {
                 $error .= "Максимальный вес файла - 1 Мб";
-                $_SESSION['answer'] .= "<div class='error'>Ошибка при загрузке картинки {$_FILES['galleryimg']['name'][$i]} <br /> {$error}</div>";
+                $_SESSION['answer']['error'] .= "Ошибка при загрузке картинки {$_FILES['galleryimg']['name'][$i]} <br /> {$error}";
                 continue;
             }
 
             if ($galleryimgError) {
                 $error .= "Ошибка при загрузке файла. Возможно, файл слишком большой";
-                $_SESSION['answer'] .= "<div class='error'>Ошибка при загрузке картинки {$_FILES['galleryimg']['name'][$i]} <br /> {$error}</div>";
+                $_SESSION['answer']['error'] .= "Ошибка при загрузке картинки {$_FILES['galleryimg']['name'][$i]} <br /> {$error}";
                 continue;
             }
             // если нет ошибок
@@ -74,36 +78,35 @@ function add_img(){
                     $galleryfiles[$i]['img'] = $galleryimgName;
                     $galleryfiles[$i]['size'] = filesize("img/normal/" . $galleryimgName);
                 } else {
-                    $_SESSION['answer'] .= "<div class='error'>Не удалось переместить загруженную картинку. Проверьте права на папки в каталоге</div>";
+                    $_SESSION['answer']['error'] .= "Не удалось переместить загруженную картинку. Проверьте права на папки в каталоге";
                 }
             }
         }
     }
     /////////картинка////////
     if (count($name) !== count($galleryfiles)) {
-        $_SESSION['add_img']['res'] = "<div class='error'>Загрузите файл изображения и укажите название</div>";
+        $_SESSION['add_img']['res'] = "Загрузите файл изображения и укажите название";
         return false;
     }
     $arrResult = array_combine($name, $galleryfiles);
     if ($arrResult) {
         $db = require 'connect.php';
         $date = date("Y-m-d  H:i:s");
-        $val = '';
-        foreach ($arrResult as $k => $value) {
-            $val .= "('" . $k . "','" . $value['img'] . "'," . $value['size'] . ",'" . $date . "'),";
-        }
-        $val = substr($val, 0, -1);
-        $query = "INSERT INTO images 
-                     (name,img, size, date)
-                     VALUES $val";
 
-        $stmt = $db->query($query);
+        $stmt = $db->prepare("INSERT INTO images
+                     (name,img, size, date)
+                     VALUES (:name,:img, :size, :date)");
+
+        foreach ($arrResult as $k => $value) {
+            $stmt->execute([':name' => $k, ':img' => $value['img'], ':size' => $value['size'], ':date' => $date]);
+        }
+
         if ($stmt->rowCount() > 0) {
-            $_SESSION['answer'] .= "<div class='success'>Изображения добавлены</div>";
+            $_SESSION['answer']['success'] .= "Изображения добавлены";
             mail_order($arrResult);
             return true;
         } else {
-            $_SESSION['add_img']['res'] = "<div class='error'>Ошибка при добавлении изображений</div>";
+            $_SESSION['add_img']['res'] = "Ошибка при добавлении изображений";
             return false;
         }
     }
@@ -122,7 +125,7 @@ function mail_order($links)
     // тело письма
     $mail_body = "Ссылки на картинки \r\n";
     foreach ($links as $k => $value) {
-        $link = "<a href='http://creasept.testovoe/img/normal/{$value['img']}'>на изображение</a>";
+        $link = "<a href='".__DIR__."/img/normal/{$value['img']}'>на изображение</a>";
         $mail_body .= "Название: {$k}, Ссылка: {$link}, Размер: {$value['size']} \r\n";
     }
 
